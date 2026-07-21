@@ -17,20 +17,23 @@ router.get("/", async (req, res) => {
         const offset = (currentPage - 1) * limitPerPage;
 
         const filterConditions = [];
+        const escapeLike = (value: string) =>
+                        value.replace(/[\\%_]/g, '\\$&');
 
         // If search query exists, filter by subject name OR subject code
         if (search) {
+            const searchPattern = `%${escapeLike(String(search))}%`;
             filterConditions.push(
                 or(
-                    ilike(subjects.name, `%${search}%`),
-                    ilike(subjects.code, `%${search}%`)
+                    ilike(subjects.name, searchPattern),
+                    ilike(subjects.code, searchPattern)
                 )
             );
         }
 
         // If department filter exists, match department name
         if (department) {
-            const deptPattern = `%${String(department).replace(/[%_]/g, '\\$&')}%`;
+            const deptPattern = `%${escapeLike(String(department))}%`;
             filterConditions.push(ilike(departments.name, deptPattern));
         }
 
